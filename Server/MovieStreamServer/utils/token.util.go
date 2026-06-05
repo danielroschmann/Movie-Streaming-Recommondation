@@ -22,8 +22,6 @@ type SignedDetails struct {
 	jwt.RegisteredClaims
 }
 
-var userCollection *mongo.Collection = database.OpenCollection("users")
-
 func GenerateAccessAndRefreshToken(email, firstName, lastName, role, userId string) (string, string, error) {
 	accessKey := os.Getenv("ACCESS_KEY")
 	refreshKey := os.Getenv("REFRESH_KEY")
@@ -70,7 +68,7 @@ func GenerateAccessAndRefreshToken(email, firstName, lastName, role, userId stri
 	return signedAccessToken, signedRefreshToken, nil
 }
 
-func UpdateTokens(userId, accessToken, refreshToken string) (err error) {
+func UpdateTokens(userId, accessToken, refreshToken string, client *mongo.Client) (err error) {
 	var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
 	defer cancel()
 
@@ -82,6 +80,9 @@ func UpdateTokens(userId, accessToken, refreshToken string) (err error) {
 			"updated_at":    updatedAt,
 		},
 	}
+
+	var userCollection *mongo.Collection = database.OpenCollection("users", client)
+
 	_, err = userCollection.UpdateOne(ctx, bson.M{"user_id": userId}, updateData)
 
 	if err != nil {

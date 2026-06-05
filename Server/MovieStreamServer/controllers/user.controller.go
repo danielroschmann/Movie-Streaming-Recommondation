@@ -7,6 +7,7 @@ import (
 
 	"github.com/danielroschmann/Movie-Streaming-Recommendation/Server/MovieStreamServer/database"
 	"github.com/danielroschmann/Movie-Streaming-Recommendation/Server/MovieStreamServer/models"
+	"github.com/danielroschmann/Movie-Streaming-Recommendation/Server/MovieStreamServer/utils"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"go.mongodb.org/mongo-driver/v2/bson"
@@ -72,5 +73,61 @@ func RegisterUser() gin.HandlerFunc {
 		}
 
 		c.JSON(http.StatusCreated, result)
+	}
+}
+
+func LoginUser() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var userLogin models.UserLogin
+
+		if err := c.ShouldBindJSON(&userLogin); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
+			return
+		}
+
+		var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
+		defer cancel()
+
+		var foundUser models.User
+
+		err := userCollection.FindOne(ctx, bson.M{"email": userLogin.Email}).Decode(&foundUser)
+
+		if err != nil {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid email or password"})
+			return
+		}
+
+		err = bcrypt.CompareHashAndPassword([]byte(foundUser.Password), []byte(userLogin.Password))
+
+		if err != nil {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid email or password"})
+			return
+		}
+
+		accessToken, refreshToken, err := utils.GenerateAccessAndRefreshToken(foundUser.FirstName, foundUser.LastName, foundUser.Email, foundUser.Role, foundUser.UserID)
+
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate tokens"})
+			return
+		}
+
+		err = utils.UpdateTokens(foundUser.UserID, accessToken, refreshToken)
+
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update tokens"})
+			return
+		}
+
+		c.JSON(http.StatusOK, models.UserResponse{
+			UserID:          foundUser.UserID,
+			FirstName:       foundUser.FirstName,
+			LastName:        foundUser.LastName,
+			Email:           foundUser.Email,
+			Role:            foundUser.Role,
+			AccessToken:     accessToken,
+			RefreshToken:    refreshToken,
+			FavouriteGenres: foundUser.FavouriteGenres,
+		})
+
 	}
 }

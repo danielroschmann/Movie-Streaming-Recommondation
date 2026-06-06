@@ -11,7 +11,7 @@ export default function MovieItem({ movie }: Props) {
   const router = useRouter();
 
   return (
-    <div className="cursor-pointer" onClick={() => router.push(`/movies/${movie.imdb_id}`)}>
+    <div className="cursor-pointer" onClick={() => router.push(`/movie/${movie.imdb_id}`)}>
       <div className="flex-1">
         <img
           src={movie.poster_path}

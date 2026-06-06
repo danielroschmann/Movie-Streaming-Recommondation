@@ -1,7 +1,7 @@
 import { getMovies } from "@/lib/movieService";
-import MovieList from "./components/MovieList";
+import MovieList from "../components/MovieList";
 
-export default async function Home() {
+export default async function MoviesPage() {
   const movies = await getMovies();
 
   return (

@@ -10,6 +10,10 @@ type WatchlistEntry struct {
 	AddedAt time.Time `bson:"added_at" json:"added_at"`
 }
 
+type AddToWatchlistEntry struct {
+	ImdbID string `bson:"imdb_id" json:"imdb_id"`
+}
+
 type User struct {
 	ID              bson.ObjectID    `bson:"_id,omitempty" json:"_id,omitempty"`
 	UserID          string           `bson:"user_id" json:"user_id"`

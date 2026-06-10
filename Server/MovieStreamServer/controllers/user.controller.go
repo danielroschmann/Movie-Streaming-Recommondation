@@ -120,16 +120,26 @@ func LoginUser(client *mongo.Client) gin.HandlerFunc {
 			return
 		}
 
+		c.SetSameSite(http.SameSiteNoneMode)
+		c.SetCookie("access_token", accessToken, 24*60*60, "/", "", true, true)
+		c.SetCookie("refresh_token", refreshToken, 24*60*60, "/", "", true, true)
+
 		c.JSON(http.StatusOK, models.UserResponse{
 			UserID:          foundUser.UserID,
 			FirstName:       foundUser.FirstName,
 			LastName:        foundUser.LastName,
 			Email:           foundUser.Email,
 			Role:            foundUser.Role,
-			AccessToken:     accessToken,
-			RefreshToken:    refreshToken,
 			FavouriteGenres: foundUser.FavouriteGenres,
 		})
+	}
+}
 
+func LogoutUser() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.SetSameSite(http.SameSiteNoneMode)
+		c.SetCookie("access_token", "", -1, "/", "", true, true)
+		c.SetCookie("refresh_token", "", -1, "/", "", true, true)
+		c.JSON(http.StatusOK, gin.H{"message": "Logged out"})
 	}
 }

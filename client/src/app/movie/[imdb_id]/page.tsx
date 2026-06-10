@@ -12,18 +12,10 @@ export default function MoviePage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const token = localStorage.getItem("access_token");
-    if (!token) {
-      router.push("/login");
-      return;
-    }
-
-    getMovie(imdb_id, token)
+    getMovie(imdb_id)
       .then(setMovie)
       .catch((err) => {
         if (err.message === "UNAUTHORIZED") {
-          localStorage.removeItem("access_token");
-          localStorage.removeItem("refresh_token");
           router.push("/login");
         } else {
           setError(err.message);

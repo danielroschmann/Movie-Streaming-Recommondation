@@ -9,15 +9,9 @@ import (
 
 func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		token, err := utils.GetAccessToken(c)
+		token, err := c.Cookie("access_token")
 
-		if err != nil {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
-			c.Abort()
-			return
-		}
-
-		if token == "" {
+		if err != nil || token == "" {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "No token provided"})
 			c.Abort()
 			return

@@ -11,18 +11,10 @@ export default function RecommendedMoviesPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const token = localStorage.getItem("access_token");
-    if (!token) {
-      router.push("/login");
-      return;
-    }
-
-    getRecommendedMovies(token)
+    getRecommendedMovies()
       .then(setMovies)
       .catch((err) => {
         if (err.message === "UNAUTHORIZED") {
-          localStorage.removeItem("access_token");
-          localStorage.removeItem("refresh_token");
           router.push("/login");
         } else {
           setError(err.message);

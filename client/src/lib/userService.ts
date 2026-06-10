@@ -20,8 +20,6 @@ export type UserResponse = {
   last_name: string;
   email: string;
   role: string;
-  access_token: string;
-  refresh_token: string;
   favourite_genres: Genre[];
 };
 
@@ -34,6 +32,7 @@ export async function registerUser(payload: RegisterPayload): Promise<void> {
   const res = await fetch(`${API_BASE}/register`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
+    credentials: "include",
     body: JSON.stringify(payload),
   });
   if (!res.ok) {
@@ -46,6 +45,7 @@ export async function loginUser(payload: LoginPayload): Promise<UserResponse> {
   const res = await fetch(`${API_BASE}/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
+    credentials: "include",
     body: JSON.stringify(payload),
   });
   if (!res.ok) {
@@ -53,4 +53,11 @@ export async function loginUser(payload: LoginPayload): Promise<UserResponse> {
     throw new Error(data.error ?? "Login failed");
   }
   return res.json();
+}
+
+export async function logoutUser(): Promise<void> {
+  await fetch(`${API_BASE}/logout`, {
+    method: "POST",
+    credentials: "include",
+  });
 }

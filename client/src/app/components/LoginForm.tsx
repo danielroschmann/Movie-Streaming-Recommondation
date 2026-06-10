@@ -21,9 +21,7 @@ export default function LoginForm() {
     setLoading(true);
 
     try {
-      const user = await loginUser(form);
-      localStorage.setItem("access_token", user.access_token);
-      localStorage.setItem("refresh_token", user.refresh_token);
+      await loginUser(form);
       router.push("/");
     } catch (err: any) {
       setError(err.message);

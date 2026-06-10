@@ -10,7 +10,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
-	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
 
 func GetWatchlist(client *mongo.Client) gin.HandlerFunc {
@@ -19,39 +18,47 @@ func GetWatchlist(client *mongo.Client) gin.HandlerFunc {
 		defer cancel()
 
 		userId := c.GetString("userId")
+		userCollection := database.OpenCollection("users", client)
 
-		projection := bson.M{
-			"watchlist.imdb_id": 1,
-			"_id":               0,
+		pipeline := mongo.Pipeline{
+			{{Key: "$match", Value: bson.M{"user_id": userId}}},
+			{{Key: "$unwind", Value: "$watchlist"}},
+			{{Key: "$lookup", Value: bson.M{
+				"from":         "movies",
+				"localField":   "watchlist.imdb_id",
+				"foreignField": "imdb_id",
+				"as":           "movieData",
+			}}},
+			{{Key: "$unwind", Value: bson.M{
+				"path":                       "$movieData",
+				"preserveNullAndEmptyArrays": true,
+			}}},
+			{{Key: "$project", Value: bson.M{
+				"_id":      0,
+				"imdb_id":  "$watchlist.imdb_id",
+				"title":    "$movieData.title",
+				"added_at": "$watchlist.added_at",
+			}}},
 		}
 
-		filter := bson.M{"user_id": userId}
-
-		opts := options.FindOne().SetProjection(projection)
-
-		var result bson.M
-
-		var userCollection *mongo.Collection = database.OpenCollection("users", client)
-
-		err := userCollection.FindOne(ctx, filter, opts).Decode(&result)
-
+		cursor, err := userCollection.Aggregate(ctx, pipeline)
 		if err != nil {
-			if err == mongo.ErrNoDocuments {
-				c.JSON(http.StatusOK, []string{})
-				return
-			}
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
-
 		}
+		defer cursor.Close(ctx)
 
-		watchlist, ok := result["watchlist"].(bson.A)
-
-		if !ok {
-			c.JSON(http.StatusOK, []string{})
+		var results []models.WatchlistEnrichedEntry
+		if err := cursor.All(ctx, &results); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
-		c.JSON(http.StatusOK, watchlist)
+
+		if results == nil {
+			results = []models.WatchlistEnrichedEntry{}
+		}
+
+		c.JSON(http.StatusOK, results)
 	}
 }
 

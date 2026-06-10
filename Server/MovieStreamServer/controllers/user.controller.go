@@ -106,7 +106,7 @@ func LoginUser(client *mongo.Client) gin.HandlerFunc {
 			return
 		}
 
-		accessToken, refreshToken, err := utils.GenerateAccessAndRefreshToken(foundUser.FirstName, foundUser.LastName, foundUser.Email, foundUser.Role, foundUser.UserID)
+		accessToken, refreshToken, err := utils.GenerateAccessAndRefreshToken(foundUser.Email, foundUser.FirstName, foundUser.LastName, foundUser.Role, foundUser.UserID)
 
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate tokens"})

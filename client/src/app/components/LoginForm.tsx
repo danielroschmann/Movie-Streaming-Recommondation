@@ -21,7 +21,9 @@ export default function LoginForm() {
     setLoading(true);
 
     try {
-      await loginUser(form);
+      const user = await loginUser(form);
+      localStorage.setItem("isLoggedIn", "true");
+      localStorage.setItem("firstName", user.first_name);
       router.push("/");
     } catch (err: any) {
       setError(err.message);

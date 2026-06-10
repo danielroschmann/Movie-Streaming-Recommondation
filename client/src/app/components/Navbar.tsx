@@ -3,19 +3,24 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { logoutUser } from "@/lib/userService";
 
 export default function Navbar() {
   const router = useRouter();
   const [loggedIn, setLoggedIn] = useState(false);
+  const [firstName, setFirstName] = useState<string | null>(null);
 
   useEffect(() => {
-    setLoggedIn(!!localStorage.getItem("access_token"));
+    setLoggedIn(!!localStorage.getItem("isLoggedIn"));
+    setFirstName(localStorage.getItem("firstName"));
   }, []);
 
-  function handleLogout() {
-    localStorage.removeItem("access_token");
-    localStorage.removeItem("refresh_token");
+  async function handleLogout() {
+    await logoutUser();
+    localStorage.removeItem("isLoggedIn");
+    localStorage.removeItem("firstName");
     setLoggedIn(false);
+    setFirstName(null);
     router.push("/login");
   }
 
@@ -31,12 +36,17 @@ export default function Navbar() {
      </div>
       <div className="flex items-center gap-4">
         {loggedIn ? (
-          <button
-            onClick={handleLogout}
-            className="text-sm text-zinc-400 hover:text-white transition-colors"
-          >
-            Sign out
-          </button>
+          <>
+            {firstName && (
+              <span className="text-sm text-zinc-400">Logged in as: {firstName}</span>
+            )}
+            <button
+              onClick={handleLogout}
+              className="text-sm text-zinc-400 hover:text-white transition-colors"
+            >
+              Sign out
+            </button>
+          </>
         ) : (
           <>
             <Link href="/login" className="text-sm text-zinc-400 hover:text-white transition-colors">

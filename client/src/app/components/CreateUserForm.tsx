@@ -19,6 +19,9 @@ const AVAILABLE_GENRES: Genre[] = [
   { genre_id: 53, genre_name: "Thriller" },
 ];
 
+const inputClass =
+  "rounded-lg bg-zinc-800 border border-zinc-700 px-4 py-2.5 text-sm text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-zinc-500 transition";
+
 export default function CreateUserForm() {
   const router = useRouter();
 
@@ -69,44 +72,47 @@ export default function CreateUserForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-4 w-full max-w-md">
+    <form onSubmit={handleSubmit} className="flex flex-col gap-5 w-full">
       <div className="flex gap-4">
-        <div className="flex flex-col gap-1 flex-1">
-          <label className="text-sm font-medium">First name</label>
+        <div className="flex flex-col gap-1.5 flex-1 min-w-0">
+          <label className="text-sm font-medium text-zinc-300">First name</label>
           <input
             name="first_name"
             value={form.first_name}
             onChange={handleChange}
             required
-            className="rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black"
+            placeholder="John"
+            className={inputClass}
           />
         </div>
-        <div className="flex flex-col gap-1 flex-1">
-          <label className="text-sm font-medium">Last name</label>
+        <div className="flex flex-col gap-1.5 flex-1 min-w-0">
+          <label className="text-sm font-medium text-zinc-300">Last name</label>
           <input
             name="last_name"
             value={form.last_name}
             onChange={handleChange}
             required
-            className="rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black"
+            placeholder="Doe"
+            className={inputClass}
           />
         </div>
       </div>
 
-      <div className="flex flex-col gap-1">
-        <label className="text-sm font-medium">Email</label>
+      <div className="flex flex-col gap-1.5">
+        <label className="text-sm font-medium text-zinc-300">Email</label>
         <input
           name="email"
           type="email"
           value={form.email}
           onChange={handleChange}
           required
-          className="rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black"
+          placeholder="you@example.com"
+          className={inputClass}
         />
       </div>
 
-      <div className="flex flex-col gap-1">
-        <label className="text-sm font-medium">Password</label>
+      <div className="flex flex-col gap-1.5">
+        <label className="text-sm font-medium text-zinc-300">Password</label>
         <input
           name="password"
           type="password"
@@ -114,12 +120,13 @@ export default function CreateUserForm() {
           onChange={handleChange}
           required
           minLength={6}
-          className="rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black"
+          placeholder="••••••••"
+          className={inputClass}
         />
       </div>
 
-      <div className="flex flex-col gap-2">
-        <label className="text-sm font-medium">Favourite genres</label>
+      <div className="flex flex-col gap-2.5">
+        <label className="text-sm font-medium text-zinc-300">Favourite genres</label>
         <div className="flex flex-wrap gap-2">
           {AVAILABLE_GENRES.map((genre) => {
             const selected = selectedGenres.some((g) => g.genre_id === genre.genre_id);
@@ -130,8 +137,8 @@ export default function CreateUserForm() {
                 onClick={() => toggleGenre(genre)}
                 className={`rounded-full px-3 py-1 text-sm border transition-colors ${
                   selected
-                    ? "bg-black text-white border-black"
-                    : "bg-white text-gray-700 border-gray-300 hover:border-black"
+                    ? "bg-white text-black border-white"
+                    : "bg-transparent text-zinc-400 border-zinc-700 hover:border-zinc-400 hover:text-zinc-200"
                 }`}
               >
                 {genre.genre_name}
@@ -141,15 +148,26 @@ export default function CreateUserForm() {
         </div>
       </div>
 
-      {error && <p className="text-sm text-red-500">{error}</p>}
+      {error && (
+        <p className="rounded-lg bg-red-500/10 border border-red-500/20 px-4 py-2.5 text-sm text-red-400">
+          {error}
+        </p>
+      )}
 
       <button
         type="submit"
         disabled={loading}
-        className="rounded bg-black px-4 py-2 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50"
+        className="rounded-lg bg-white px-4 py-2.5 text-sm font-semibold text-black hover:bg-zinc-200 disabled:opacity-40 transition-colors"
       >
         {loading ? "Creating account..." : "Create account"}
       </button>
+
+      <p className="text-sm text-zinc-500 text-center">
+        Already have an account?{" "}
+        <a href="/login" className="text-white font-medium hover:underline">
+          Sign in
+        </a>
+      </p>
     </form>
   );
 }

@@ -32,6 +32,17 @@ export async function getMovie(imdbId: string, token: string): Promise<Movie> {
     headers: { Authorization: `Bearer ${token}` },
     cache: "no-store",
   });
+  if (res.status === 401) throw new Error("UNAUTHORIZED");
   if (!res.ok) throw new Error("Failed to fetch movie");
+  return res.json();
+}
+
+export async function getRecommendedMovies(token: string): Promise<Movie[]> {
+  const res = await fetch(`${API_BASE}/recommendedmovies`, {
+    headers: { Authorization: `Bearer ${token}` },
+    cache: "no-store",
+  });
+  if (res.status === 401) throw new Error("UNAUTHORIZED");
+  if (!res.ok) throw new Error("Failed to fetch recommended movies");
   return res.json();
 }
